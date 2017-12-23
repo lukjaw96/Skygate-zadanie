@@ -10,7 +10,7 @@ function checkIfIntegerAndDisplay(number) {
 
 function Producer(name, counter, price, modFactor, cookiesPerSecond) {
     this.name = name;
-    this.counter = counter;    
+    this.counter = counter;
     this.price = price;
     this.mod = modFactor;
     this.cookiesPerSecond = cookiesPerSecond;
@@ -20,7 +20,7 @@ function Producer(name, counter, price, modFactor, cookiesPerSecond) {
             counterCookie = counterCookie - price;
             cookiesPerSecondAll = cookiesPerSecondAll + modFactor;
             counter = counter + 1;            
-            price = price + counter;
+            price = Math.ceil(price + 0.15*price);
             cookiesPerSecond = cookiesPerSecond + modFactor;
             document.querySelector('.' + name + '-count').innerHTML = counter;
             document.querySelector('.' + name + '-price').innerHTML = price;
@@ -78,70 +78,73 @@ function clickOfProducers() {
     document.querySelector(".counter-cookie").innerHTML = checkIfIntegerAndDisplay(counterCookie);
 }
 
-producerClick = window.setInterval(clickOfProducers, 100); 
+producerClick = window.setInterval(clickOfProducers, 100);
 
+//it is possible to add another producer, create new producer, addEventListener, insert producer into producersArray and add another li in html document
 
-
-var Grandma = new Producer('grandma', 0, 5, 1, 0);
-document.querySelector(".grandma").addEventListener("click", function () {
-    Grandma.onProducerClick();
-}, false);
- 
-
-var Factory = new Producer('factory', 0, 20, 10, 0);
-document.querySelector(".factory").addEventListener("click", function () {
-    Factory.onProducerClick();
-}, false);
-
-
-var Cursor = new Producer('cursor', 0, 3, 0.1, 0);
+const Cursor = new Producer('cursor', 0, 15, 0.1, 0);
 document.querySelector(".cursor").addEventListener("click", function () {
     Cursor.onProducerClick();
 }, false);
 
-var Mine = new Producer('mine', 0, 10, 8, 0);
-document.querySelector(".mine").addEventListener("click", function () {
-    Mine.onProducerClick();
+const Grandma = new Producer('grandma', 0, 100, 1, 0);
+document.querySelector(".grandma").addEventListener("click", function () {
+    Grandma.onProducerClick();
 }, false);
 
+const Farm = new Producer('farm', 0, 1100, 8, 0);
+document.querySelector(".farm").addEventListener("click", function () {
+    Farm.onProducerClick();
+}, false);
 
-var producersArray = [Cursor, Grandma, Factory, Mine];
+const Mine = new Producer('mine', 0, 12000, 47, 0);
+document.querySelector(".mine").addEventListener("click", function () {
+    Mine.onProducerClick();
+}, false); 
 
-var arrayStartPrice = [];
-for (var i = 0; i < producersArray.length; i++) {
+const Factory = new Producer('factory', 0, 130000, 260, 0);
+document.querySelector(".factory").addEventListener("click", function () {
+    Factory.onProducerClick();
+}, false);
+
+const producersArray = [Cursor, Grandma, Farm, Mine, Factory];
+
+const arrayStartPrice = [];
+for (let i = 0; i < producersArray.length; i++) {
     arrayStartPrice[i] = producersArray[i].getPrice();
 }; 
 
-for (var i = 0; i < producersArray.length; i++) {
+for (let i = 0; i < producersArray.length; i++) {
     document.querySelector('.' + producersArray[i].getName() + '-price').innerHTML = arrayStartPrice[i];
 }; 
 
-var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
-var db;
+const indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
+let db;
     
-var open = indexedDB.open("Database", 1);
+const open = indexedDB.open("Database", 1);
 open.onupgradeneeded = function() {
     db = open.result;
-    var storeCookies = db.createObjectStore("cookies", {keyPath: "id"});
+    let storeCookies = db.createObjectStore("cookies", {keyPath: "id"});
 
-    var storeProducers = db.createObjectStore("producers", {keyPath: "id"});
+    let storeProducers = db.createObjectStore("producers", {keyPath: "id"});
 };
 
 open.onsuccess = function() {
     db = open.result;
+    outputData();
 }
 
 
 function insertData() {
-    var transactionCookies = db.transaction("cookies", "readwrite");
-    var storeCookies = transactionCookies.objectStore("cookies");
+    const transactionCookies = db.transaction("cookies", "readwrite");
+    const storeCookies = transactionCookies.objectStore("cookies");
 
     storeCookies.put({id: 1, counterCookie: document.querySelector(".counter-cookie").innerHTML, cookiesPerSecond: document.querySelector(".cookies-per-second").innerHTML, });
 
-    var transactionProducers = db.transaction("producers", "readwrite");
-    var storeProducers = transactionProducers.objectStore("producers");
+    const transactionProducers = db.transaction("producers", "readwrite");
+    const storeProducers = transactionProducers.objectStore("producers");
 
-    for (var i = 1; i < producersArray.length + 1; i++) {
+    for (let i = 1; i < producersArray.length + 1; i++) {
 
         storeProducers.put({id: i, Counter: producersArray[i-1].getCounter(), Price: producersArray[i-1].getPrice(), CookiesPerSecond: producersArray[i-1].getCookiesPerSecond(),
                             Name: producersArray[i-1].getName(),
@@ -153,9 +156,11 @@ document.querySelector(".insert").addEventListener("click", function () {
     insertData();
 }, false);
 
+autoInsert = window.setInterval(insertData, 5000);
+
 function outputData() {
-    var transactionCookies = db.transaction("cookies", "readwrite");
-    var storeCookies = transactionCookies.objectStore("cookies");
+    const transactionCookies = db.transaction("cookies", "readwrite");
+    const storeCookies = transactionCookies.objectStore("cookies");
 
     getInformation = storeCookies.get(1);
 
@@ -164,17 +169,17 @@ function outputData() {
         cookiesPerSecondAll = parseFloat(getInformation.result.cookiesPerSecond);
     };
 
-    var transactionProducers = db.transaction("producers", "readwrite");
-    var storeProducers = transactionProducers.objectStore("producers");
+    const transactionProducers = db.transaction("producers", "readwrite");
+    const storeProducers = transactionProducers.objectStore("producers");
 
     storeProducers.openCursor().onsuccess = function(event) {
-        var cursor = event.target.result;
+        let cursor = event.target.result;
         if (cursor) {        
             producersArray[cursor.key - 1].setCounter(parseInt(cursor.value.Counter, 10));
             producersArray[cursor.key - 1].setPrice(parseInt(cursor.value.Price, 10));
             producersArray[cursor.key - 1].setCookiesPerSecond(parseFloat(cursor.value.CookiesPerSecond));
 
-            var tmpName = cursor.value.Name;
+            let tmpName = cursor.value.Name;
 
             document.querySelector('.' + tmpName + '-count').innerHTML = parseInt(cursor.value.Counter, 10);
             document.querySelector('.' + tmpName + '-price').innerHTML = parseInt(cursor.value.Price, 10);
@@ -190,15 +195,15 @@ document.querySelector(".output").addEventListener("click", function () {
 }, false);
 
 function deleteData() {
-    var transactionCookies = db.transaction("cookies", "readwrite");
-    var storeCookies = transactionCookies.objectStore("cookies");
+    const transactionCookies = db.transaction("cookies", "readwrite");
+    const storeCookies = transactionCookies.objectStore("cookies");
 
     storeCookies.put({id: 1, counterCookie: 0, cookiesPerSecond: 0, });
 
-    var transactionProducers = db.transaction("producers", "readwrite");
-    var storeProducers = transactionProducers.objectStore("producers");
+    const transactionProducers = db.transaction("producers", "readwrite");
+    const storeProducers = transactionProducers.objectStore("producers");
 
-    for (var i = 1; i < producersArray.length + 1; i++) {
+    for (let i = 1; i < producersArray.length + 1; i++) {
         storeProducers.put({id: i, Counter: 0, Price: arrayStartPrice[i-1], CookiesPerSecond: 0,
                             Name: producersArray[i-1].getName(),
         });
@@ -208,4 +213,9 @@ function deleteData() {
 
 document.querySelector(".delete").addEventListener("click", function () {
     deleteData();
+}, false);
+
+
+document.querySelector(".god-mode").addEventListener("click", function () {
+    counterCookie = counterCookie + 1000000;
 }, false);

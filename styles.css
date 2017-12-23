@@ -1,25 +1,33 @@
 body {
-	background-color: white;
 	margin: auto;
 	color: #8B8B8B;	
 }
 
 .wrapper {
 	display: flex;
-	flex-direction:row;
+	flex-direction:column;
 	width:80%;
-	margin: 0 auto;	
+	margin: 0 auto;
+}
+
+main {
+	display: flex;
+	flex: 1;
+	justify-content: center;
+}
+
+.controls {
+	display: flex;
+	justify-content: center;
 }
 
 .cookie {
 	width: 100px;
 	height: 100px;
-	background-color: brown;
+	background-image: gingerbread_man.png;
+	background: url("cookie.png") 50% 50%;
 	border-radius: 50% 50%;
 }
 
-.counter-cookie {
-	position: relative;
-	top:40%;
-	left:40%;
-}
+
+
